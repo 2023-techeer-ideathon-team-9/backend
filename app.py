@@ -19,7 +19,25 @@ class Resume(db.Model):
         self.title = title
         self.content = content
 
-@app.route('/resume', methods=['GET'])
+@app.route('/search_keyword', methods=['POST'])
+def search_resume():
+    data = request.get_json()
+    keyword = data.get('keyword', '')
+
+    resumes = Resume.query.filter(Resume.title.ilike(f'%{keyword}%')).all()
+
+    resume_list = []
+    for resume in resumes:
+        resume_dict = {
+            'id': resume.id,
+            'title': resume.title,
+            'content': resume.content
+        }
+        resume_list.append(resume_dict)
+
+    return jsonify({'resumes': resume_list})
+
+@app.route('/all_resume', methods=['GET'])
 def get_resume():
     resumes = Resume.query.all()
     resume_list = []
