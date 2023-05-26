@@ -3,7 +3,6 @@ from flask_sqlalchemy import SQLAlchemy
 import openai
 from register_file import get_text
 
-
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:root@localhost/Resume'
 db = SQLAlchemy(app)
@@ -11,15 +10,17 @@ db = SQLAlchemy(app)
 # Set up your OpenAI API credentials
 openai.api_key = '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'
 
+
 # Define your Resume model
 class Resume(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String(100))
     content = db.Column(db.Text)
 
     def __init__(self, title, content):
         self.title = title
         self.content = content
+
 
 @app.route('/search_keyword', methods=['POST'])
 def search_resume():
@@ -39,6 +40,7 @@ def search_resume():
 
     return jsonify({'resumes': resume_list})
 
+
 @app.route('/all_resume', methods=['GET'])
 def get_resume():
     resumes = Resume.query.all()
@@ -50,7 +52,7 @@ def get_resume():
             'content': resume.content
         }
         resume_list.append(resume_dict)
-    return jsonify({'resumes': resume_list})        
+    return jsonify({'resumes': resume_list})
 
 
 # Define a function to interact with the ChatGPT model
@@ -96,8 +98,11 @@ def upload():
     file = request.files['file']
     if file.filename == '':
         return 'No selected file', 400
-    get_text(file)
-    #   나뉜 텍스트 DB 업로드 필요
+
+    for i in get_text(file):
+        data = Resume(i[0], i[1])
+        db.session.add(data)
+    db.session.commit()
     return 'File uploaded successfully'
 
 
