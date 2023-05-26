@@ -19,7 +19,7 @@ class Resume(db.Model):
         self.title = title
         self.content = content
 
-@app.route('/search_keyword', methods=['POST'])
+@app.route('/resume/search_keyword', methods=['POST'])
 def search_resume():
     data = request.get_json()
     keyword = data.get('keyword', '')
@@ -35,7 +35,8 @@ def search_resume():
         }
         resume_list.append(resume_dict)
 
-    return jsonify({'resumes': resume_list})
+    return jsonify(resume_list)
+
 
 @app.route('/all_resume', methods=['GET'])
 def get_resume():
