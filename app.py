@@ -7,7 +7,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:root@localhost/Resume'
 db = SQLAlchemy(app)
 
 # Set up your OpenAI API credentials
-openai.api_key = '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'
+openai.api_key = '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'
 
 # Define your Resume model
 class Resume(db.Model):
@@ -64,11 +64,18 @@ def chat_with_gpt(prompt):
     )
     return response.choices[0].text.strip()
 
-@app.route('/chatgpt/getresult/', methods=['POST'])
+@app.route('/chatgpt/getresult2/', methods=['POST']) #지원동기의 첫번째 검색 결과를 company_name에 맞게 바꿔주라.
 def chat():
     data = request.get_json()
+    keyword = '지원동기'
+
+    resume = Resume.query.filter(Resume.title.ilike(f'%{keyword}%')).first()
+
+    if resume is None:
+        return jsonify({'response': 'No matching resume found'})
+
     company_name = data.get('company_name', '')
-    content = data.get('content', '')
+    content = resume.content
 
     texts = [
         f"아래 내용을 {company_name}의 인재상에 맞게 바꿔줘",
@@ -83,6 +90,27 @@ def chat():
 
     response = chat_with_gpt(prompt)
     return jsonify({'response': response})
+
+
+# @app.route('/chatgpt/getresult/', methods=['POST'])
+# def chat():
+#     data = request.get_json()
+#     company_name = data.get('company_name', '')
+#     content = data.get('content', '')
+
+#     texts = [
+#         f"아래 내용을 {company_name}의 인재상에 맞게 바꿔줘",
+#         content
+#     ]
+
+#     prompt = ""
+#     for i, text in enumerate(texts, start=1):
+#         prompt += f"[{text}]\n"
+#         prompt += f"Sample content {i}.\n"
+#         prompt += "\n"
+
+#     response = chat_with_gpt(prompt)
+#     return jsonify({'response': response})
 
 if __name__ == '__main__':
     with app.app_context():
