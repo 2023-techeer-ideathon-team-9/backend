@@ -1,10 +1,13 @@
 from flask import Flask, request, jsonify
 import openai
+from register_file import get_text
+
 
 # Set up your OpenAI API credentials
 openai.api_key = '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'
 
 app = Flask(__name__)
+
 
 # Define a function to interact with the ChatGPT model
 def chat_with_gpt(prompt):
@@ -18,6 +21,7 @@ def chat_with_gpt(prompt):
         timeout=10  # Maximum time in seconds to wait for the API response
     )
     return response.choices[0].text.strip()
+
 
 @app.route('/chatgpt/getresult/', methods=['POST'])
 def chat():
@@ -38,6 +42,20 @@ def chat():
 
     response = chat_with_gpt(prompt)
     return jsonify({'response': response})
+
+
+@app.route('resume/upload', methods=['POST'])
+def upload():
+    if 'file' not in request.files:
+        return 'No file uploaded', 400
+
+    file = request.files['file']
+    if file.filename == '':
+        return 'No selected file', 400
+    get_text(file)
+    #   나뉜 텍스트 DB 업로드 필요
+    return 'File uploaded successfully'
+
 
 if __name__ == '__main__':
     app.run()
