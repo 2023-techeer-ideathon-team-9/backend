@@ -19,6 +19,19 @@ class Resume(db.Model):
         self.title = title
         self.content = content
 
+@app.route('/resume', methods=['GET'])
+def get_resume():
+    resumes = Resume.query.all()
+    resume_list = []
+    for resume in resumes:
+        resume_dict = {
+            'id': resume.id,
+            'title': resume.title,
+            'content': resume.content
+        }
+        resume_list.append(resume_dict)
+    return jsonify({'resumes': resume_list})        
+
 # Define a function to interact with the ChatGPT model
 def chat_with_gpt(prompt):
     response = openai.Completion.create(
