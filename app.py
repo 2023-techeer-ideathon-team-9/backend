@@ -1,10 +1,23 @@
 from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
 import openai
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:root@localhost/Resume'
+db = SQLAlchemy(app)
 
 # Set up your OpenAI API credentials
 openai.api_key = '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'
 
-app = Flask(__name__)
+# Define your Resume model
+class Resume(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(100))
+    content = db.Column(db.Text)
+
+    def __init__(self, title, content):
+        self.title = title
+        self.content = content
 
 # Define a function to interact with the ChatGPT model
 def chat_with_gpt(prompt):
@@ -40,4 +53,6 @@ def chat():
     return jsonify({'response': response})
 
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
     app.run()
